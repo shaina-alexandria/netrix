@@ -1,0 +1,85 @@
+---
+title: "Examples for the netRIx repository"
+author: "Shaina Alexandria"
+date: "1/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This file will discuss the purpose of the primary functions of the files in this repository, and provide examples along the way. All necessary component functions and dependencies for the examples can be loaded through ```source("functionFarm.R")``` after downloading the R files in the repository.
+
+## Generating data
+
+Sample data for the following examples can be generated using the ```genNet``` function.
+
+| Parameter | Type | Details|
+|---|--|----------------|
+| p0 | scalar |Number between 0 and 1. Per-contact probability of transmission for an individual in the control group  |
+| p1 | scalar |Number between 0 and 1. Per-contact probability of transmission for an individual in the treatment group|
+| ep   | scalar | Number between 0 and 1. Probability of getting sick from outside of the observed network |
+| netgenmodel   | string | Model used to generate network. default "scale-free", other option "ergm"
+| N   | integer | Number of individuals in the network |
+| h   | integer | Number of clusters in the network |
+| m   | integer | Number of clusters to be assignmed to the treatment group |
+| s   | integer | Number of individuals with the outcome at baseline (time 0) |
+| m.friends   |  scalar | Mean number of friends individuals have within the network (used for ERGM model selection only) |
+| tau   | integer | Number of time points, subsequent to baseline|
+| immunity   | boolean | An indicator of whether or not immunity is incurred after experiencing the outcome|
+
+
+
+```{r, eval = FALSE}
+dat <- genNet(p0 = 0.3, p1 = 0.1, ep = 0.01, netgenmodel = "scale-free", N=500, h=100, m=50, s=20, m.friends=4, tau=1, immunity=FALSE)
+```
+
+
+This function takes in values of $\theta = (p_0, p_1, \epsilon)$, a network model (either "scale-free" or "ergm"), and sample size $N$, number of clusters $h$, and number of cases at baseline $s$, and returns network and outcome information at each of ```tau``` subsequent time points. The output is a list with three elements: 1. the network type used to generate the data; 2. a data frame with id, cluster, treatment assignment, and outcome information; 3. an $n \times n \times (tau + 1)$ array of contact information. Entry ${ijt}$ of the array is 1 if individuals $i$ and $j$ are contacts at time $t$ and 0 otherwise.
+
+The parameter ```m.friends``` is used in the ERGM, and is loosely interpreted as the desired mean number of contacts for an individual in the network.
+
+This function allows the concept of immunity to be incorporated; set ```immunity = TRUE``` in the function call. If immunity is assumed, $r_{it}({\bf a})$ is set to zero for all individuals $i$ who had ILI at a previous time point. The immunity assumption is not used in the simulations presented in the manuscript.
+
+## Randomization based tests
+
+For tests corresponding to test statistics $T_1$ through $T_4$ in the related manuscript, the ```perm.test``` function can be used.
+
+| Parameter | Type | Details|
+|---|--|----------------|
+| data      |list |  List object of the form returned by genNet |
+| test.stat | function | Function that takes in data and returns a test statistic. The function ```stat1``` corresponding to test statistic $T_1$ in the manuscript. The same is true for ```stat2```, ```stat3```, and ```stat4``` |
+| n.sims    |  integer | The number of permutations used to generate a sampling distribution for the test statistic. Default is 1000|
+
+The following code uses perm.test on the data using each of four test statistics.
+
+```{r, eval = FALSE}
+test1 <- perm.test(data = dat, test.stat = stat1)
+test2 <- perm.test(data = dat, test.stat = stat2)
+test3 <- perm.test(data = dat, test.stat = stat3)
+test4 <- perm.test(data = dat, test.stat = stat4)
+
+```
+
+The ```perm.test``` function conducts a permutation test using a given choice of test statistic and a sampling distribution of size ```n.sims``` (default is 1000). This test considers permutations that assign the same treatment to everyone in the same cluster, where cluster assignment is provided in the data. This function returns the p-value of the test as well as the test statistic for the observed data.
+
+## Stochastic potential outcomes model
+
+For inference using the stochastic potential outcomes framework (corresponding to test statistic $T_5$ in the manuscript), the ```boundSearch``` function can be used.
+
+| Parameter | Type | Details|
+|---|--|----------------|
+| data   |list |  List object of the form returned by genNet |
+| alpha   | scalar | Value between 0 and 1. Represents the test size for the desired $(1 - \alpha)$ CI. Default is 0.05|
+| B.sampDist   | integer | Number of simualted datasets to use in the sampling distributions. Default is 100 |
+| B.optIters   | integer | The maximum number of iterations nloptr can use to gather information on the location of the upper and lower bounds. Default is 100 |
+| plot   | boolean | Indicator of whether or not to return an illustrative plot with the MLE and bounds.  Default is FALSE |
+
+```{r, eval = FALSE}
+bds <- boundSearch(data = dat, alpha = 0.05, B.sampDist = 20, B.optIters = 5, plot = TRUE)
+
+
+```
+
+This function returns estimates for the upper and lower bound for $\delta$ as well as the estimate $\delta_{\hat{\theta}}$. See the Appendix of the corresponding manuscript for details on this bound search procedure.
