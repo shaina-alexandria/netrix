@@ -534,7 +534,7 @@ test4 &lt;- perm.test(data = dat, test.stat = stat4)</code></pre>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>bds &lt;- boundSearch(data = dat, alpha = 0.05, B.sampDist = 20, B.optIters = 5, plot = TRUE)</code></pre>
+<pre class="r"><code>bds &lt;- boundSearch(data = dat, alpha = 0.05, B.sampDist = 100, B.optIters = 100, plot = TRUE)</code></pre>
 <p>This function returns estimates for the upper and lower bound for <span class="math inline">\(\delta\)</span> as well as the estimate <span class="math inline">\(\delta_{\hat{\theta}}\)</span>. See the Appendix of the corresponding manuscript for details on this bound search procedure.</p>
 </div>
 

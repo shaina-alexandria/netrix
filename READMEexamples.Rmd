@@ -77,7 +77,7 @@ For inference using the stochastic potential outcomes framework (corresponding t
 | plot   | boolean | Indicator of whether or not to return an illustrative plot with the MLE and bounds.  Default is FALSE |
 
 ```{r, eval = FALSE}
-bds <- boundSearch(data = dat, alpha = 0.05, B.sampDist = 20, B.optIters = 5, plot = TRUE)
+bds <- boundSearch(data = dat, alpha = 0.05, B.sampDist = 100, B.optIters = 100, plot = TRUE)
 
 
 ```
