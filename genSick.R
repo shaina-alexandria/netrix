@@ -55,13 +55,13 @@ genSick <- function(dat, sick0, ep, immunity, net, trans.prob){
  
     return(res)
   })) 
-
-  dat2 <- as.data.frame(summ)
-  dat   <- merge(dat, dat2, all = T, sort = F)
-
-  dat$s[dat$t == times[2]] <- sick.t[ ,t.pts]
   
-  data <- with(dat, data.frame(id, cluster, txt, t, s, y.prop, y.bin))
+
+  dat2  <- as.data.frame(summ)
+  dat1  <- dat[ , c("id", "cluster", "txt", "t")]
+  dat3  <- merge(dat1, dat2, all = T, sort = F)
+
+  data <- with(dat3, data.frame(id, cluster, txt, t, s, y.prop, y.bin))
 
   
   return(data)
